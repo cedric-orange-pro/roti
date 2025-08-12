@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+/* Animations personnalisées pour le design moderne */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+  }
+}
+
+/* Custom scrollbar pour le dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(15 23 42);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgb(99 102 241), rgb(168 85 247));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(79 70 229), rgb(147 51 234));
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Glassmorphism utilities */
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Amélioration du focus pour l'accessibilité */
+*:focus-visible {
+  outline: 2px solid rgb(168 85 247);
+  outline-offset: 2px;
+}
+
+/* Animation d'entrée pour les cartes */
+.card-enter {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Effet de hover sur les cartes */
+.card-hover:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Loading dots animation */
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-dot-1 {
+  animation: pulse-dot 1.5s infinite;
+}
+
+.animate-pulse-dot-2 {
+  animation: pulse-dot 1.5s infinite 0.5s;
+}
+
+.animate-pulse-dot-3 {
+  animation: pulse-dot 1.5s infinite 1s;
+}
