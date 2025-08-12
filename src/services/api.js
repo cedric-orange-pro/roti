@@ -1,5 +1,18 @@
 // Service API pour communiquer avec la base de données
-const API_BASE_URL = 'http://localhost:3001/api';
+// Détection automatique de l'URL de l'API selon l'environnement
+const getApiBaseUrl = () => {
+  // En mode développement, utiliser le port 3001
+  if (window.location.port === '5173' || window.location.port === '5174') {
+    return 'http://localhost:3001/api';
+  }
+  // En production ou Docker, utiliser le même port que l'interface
+  return `${window.location.origin}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Debug: afficher l'URL utilisée
+console.log('🔗 API URL détectée:', API_BASE_URL);
 
 // Gestion du token admin
 function getAdminToken() {

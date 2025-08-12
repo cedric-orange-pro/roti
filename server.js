@@ -4,6 +4,7 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import crypto from 'crypto';
+import process from 'process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,7 +14,8 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const JWT_SECRET = process.env.JWT_SECRET || 'roti-secret-key-2025';
 
 // Initialiser la base de données SQLite
-const db = new Database(join(__dirname, 'roti.db'));
+const dbPath = join(__dirname, 'data', 'roti.db');
+const db = new Database(dbPath);
 
 // Créer les tables si elles n'existent pas
 db.exec(`
@@ -44,10 +46,6 @@ function generateToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
-function hashPassword(password) {
-  return crypto.createHash('sha256').update(password + JWT_SECRET).digest('hex');
-}
-
 function verifyAdminToken(token) {
   const session = db.prepare('SELECT * FROM admin_sessions WHERE token = ? AND expires_at > datetime()').get(token);
   return !!session;
@@ -62,6 +60,11 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Servir les fichiers statiques en production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(join(__dirname, 'dist')));
+}
 
 // API Routes
 
@@ -287,6 +290,13 @@ app.delete('/api/votes', (req, res) => {
   }
 });
 
+// Route catch-all pour servir l'application React en production
+if (process.env.NODE_ENV === 'production') {
+  app.get('/', (req, res) => {
+    res.sendFile(join(__dirname, 'dist', 'index.html'));
+  });
+}
+
 // Gérer la fermeture propre de la base de données
 process.on('SIGINT', () => {
   console.log('\nFermeture de la base de données...');
@@ -297,5 +307,5 @@ process.on('SIGINT', () => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Serveur API ROTI démarré sur http://localhost:${PORT}`);
-  console.log(`📊 Base de données SQLite: ${join(__dirname, 'roti.db')}`);
+  console.log(`📊 Base de données SQLite: ${dbPath}`);
 });

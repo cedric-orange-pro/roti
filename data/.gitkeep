@@ -1,0 +1,2 @@
+# Ce fichier assure que le dossier data est tracké par Git
+# La base de données SQLite sera créée automatiquement dans ce dossier
