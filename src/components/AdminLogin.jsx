@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { apiService } from '../services/api';
 
 const AdminLogin = ({ onLogin, onClose }) => {
@@ -19,8 +20,8 @@ const AdminLogin = ({ onLogin, onClose }) => {
     try {
       await apiService.adminLogin(password);
       onLogin();
-    } catch {
-      setError('Mot de passe incorrect');
+    } catch (error) {
+      setError(error.message || 'Mot de passe incorrect');
     } finally {
       setLoading(false);
     }
@@ -32,22 +33,21 @@ const AdminLogin = ({ onLogin, onClose }) => {
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  };
-
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onClick={handleBackdropClick}
-      onKeyDown={handleKeyDown}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="admin-login-title"
-    >
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 relative">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {/* Backdrop invisible pour capturer les clics */}
+      <button 
+        className="fixed inset-0 -z-10 bg-transparent border-none outline-none cursor-default"
+        onClick={handleBackdropClick}
+        aria-label="Fermer la modal"
+        type="button"
+      />
+      
+      <dialog 
+        open
+        className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 relative border-0 p-0"
+        aria-labelledby="admin-login-title"
+      >
         {/* Bouton de fermeture */}
         <button
           onClick={onClose}
@@ -83,11 +83,17 @@ const AdminLogin = ({ onLogin, onClose }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
                 autoFocus
+                aria-describedby={error ? "password-error" : undefined}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    onClose();
+                  }
+                }}
               />
             </div>
 
             {error && (
-              <div className="mb-4 text-red-600 text-sm text-center bg-red-50 py-2 px-3 rounded">
+              <div id="password-error" className="mb-4 text-red-600 text-sm text-center bg-red-50 py-2 px-3 rounded" role="alert">
                 {error}
               </div>
             )}
@@ -111,9 +117,14 @@ const AdminLogin = ({ onLogin, onClose }) => {
             </button>
           </form>
         </div>
-      </div>
+      </dialog>
     </div>
   );
+};
+
+AdminLogin.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired
 };
 
 export default AdminLogin;

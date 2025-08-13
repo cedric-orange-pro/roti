@@ -9,9 +9,15 @@ import process from 'process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Configuration admin (en production, utilisez des variables d'environnement)
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
-const JWT_SECRET = process.env.JWT_SECRET || 'roti-secret-key-2025';
+// Configuration admin sécurisée
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (() => {
+  console.warn('⚠️  ADMIN_PASSWORD non défini. Utilisation d\'un mot de passe par défaut NON SÉCURISÉ.');
+  return 'admin123';
+})();
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.warn('⚠️  JWT_SECRET non défini. Utilisation d\'une clé par défaut NON SÉCURISÉE.');
+  return 'roti-secret-key-2025';
+})();
 
 // Initialiser la base de données SQLite
 const dbPath = join(__dirname, 'data', 'roti.db');
@@ -105,7 +111,7 @@ app.post('/api/admin/login', (req, res) => {
 app.get('/api/admin/verify', (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
+    const token = authHeader?.split(' ')[1];
     
     if (!token) {
       return res.status(401).json({ error: 'Token manquant' });
@@ -126,7 +132,7 @@ app.get('/api/admin/verify', (req, res) => {
 function requireAdminAuth(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
+    const token = authHeader?.split(' ')[1];
     
     if (!token) {
       return res.status(401).json({ error: 'Authentification requise' });
@@ -217,6 +223,12 @@ app.delete('/api/votes', requireAdminAuth, (req, res) => {
 app.get('/api/session/:sessionId', (req, res) => {
   try {
     const { sessionId } = req.params;
+    
+    // Validation du paramètre
+    if (!sessionId || typeof sessionId !== 'string' || sessionId.trim().length === 0) {
+      return res.status(400).json({ error: 'SessionId invalide' });
+    }
+    
     const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
     
     if (session) {
@@ -240,12 +252,26 @@ app.get('/api/session/:sessionId', (req, res) => {
 app.post('/api/vote', (req, res) => {
   try {
     const { rating, sessionId } = req.body;
+    
+    // Validation des entrées
+    if (!rating || !sessionId) {
+      return res.status(400).json({ error: 'Rating et sessionId requis' });
+    }
+    
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating doit être un entier entre 1 et 5' });
+    }
+    
+    if (typeof sessionId !== 'string' || sessionId.trim().length === 0) {
+      return res.status(400).json({ error: 'SessionId doit être une chaîne non vide' });
+    }
+    
     const ipAddress = req.ip || req.connection.remoteAddress;
 
     // Vérifier si la session a déjà voté
     const existingSession = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
     
-    if (existingSession && existingSession.has_voted) {
+    if (existingSession?.has_voted) {
       return res.status(400).json({ error: 'Session has already voted' });
     }
 
@@ -270,22 +296,6 @@ app.post('/api/vote', (req, res) => {
     });
   } catch (error) {
     console.error('Error saving vote:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Réinitialiser tous les votes (admin uniquement)
-app.delete('/api/votes', (req, res) => {
-  try {
-    db.prepare('DELETE FROM votes').run();
-    db.prepare('DELETE FROM sessions').run();
-    
-    res.json({ 
-      success: true, 
-      message: 'Tous les votes ont été supprimés' 
-    });
-  } catch (error) {
-    console.error('Error resetting votes:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

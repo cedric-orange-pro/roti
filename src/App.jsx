@@ -59,12 +59,9 @@ function App() {
 
   // Effet pour charger les votes quand l'admin se connecte
   useEffect(() => {
-    console.log('useEffect - isAdmin:', isAdmin, 'isAdminLoggedIn:', isAdminLoggedIn)
     if (isAdmin && isAdminLoggedIn) {
-      console.log('Loading votes for admin...')
       setIsLoadingStats(true)
       apiService.getVotes().then(votesData => {
-        console.log('Votes loaded:', votesData)
         setVotes(votesData)
       }).catch(err => {
         console.error('Error loading votes for admin:', err)
@@ -81,7 +78,6 @@ function App() {
     if (isAdmin && isAdminLoggedIn) {
       // Actualiser les votes toutes les 5 secondes
       interval = setInterval(() => {
-        console.log('Auto-refreshing votes...')
         apiService.getVotes().then(votesData => {
           setVotes(votesData)
         }).catch(err => {
@@ -135,7 +131,6 @@ function App() {
   const getStats = () => {
     // S'assurer que votes est un tableau
     const votesArray = Array.isArray(votes) ? votes : []
-    console.log('getStats - votes:', votesArray, 'length:', votesArray.length)
     
     if (votesArray.length === 0) return {}
     
@@ -150,7 +145,6 @@ function App() {
     
     const average = total / votesArray.length
     const result = { ...stats, average, total: votesArray.length }
-    console.log('getStats - result:', result)
     
     return result
   }

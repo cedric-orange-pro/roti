@@ -150,7 +150,8 @@ export const apiService = {
       });
       
       if (!response.ok) {
-        throw new Error('Mot de passe incorrect');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Mot de passe incorrect');
       }
       
       const data = await response.json();
